@@ -52,7 +52,7 @@ echo 🚀 Setup Complete!
 echo.
 echo Next steps:
 echo 1. Edit .env file with your API credentials
-echo 2. Test locally: python postbot.py test
+echo 2. Test locally: python3 postbot.py test
 echo 3. Push to GitHub: git add . ^&^& git commit -m "Ready for Railway" ^&^& git push
 echo 4. Deploy to Railway: https://railway.app
 echo.

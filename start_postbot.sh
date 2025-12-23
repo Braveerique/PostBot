@@ -38,4 +38,4 @@ echo "Starting PostBot..."
 echo "Press Ctrl+C to stop"
 echo ""
 
-python postbot.py
+python3 postbot.py

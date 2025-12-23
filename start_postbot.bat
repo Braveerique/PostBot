@@ -3,12 +3,15 @@ echo PostBot - Social Media Stream Notifier
 echo =====================================
 
 REM Check if Python is installed
-python --version >nul 2>&1
+python3 --version >nul 2>&1
 if errorlevel 1 (
-    echo Error: Python is not installed or not in PATH
-    echo Please install Python 3.8 or higher from https://python.org
-    pause
-    exit /b 1
+    python --version >nul 2>&1
+    if errorlevel 1 (
+        echo Error: Python is not installed or not in PATH
+        echo Please install Python 3.8 or higher from https://python.org
+        pause
+        exit /b 1
+    )
 )
 
 REM Check if .env file exists
@@ -26,7 +29,7 @@ if not exist .env (
 REM Install dependencies if needed
 if not exist .venv (
     echo Creating virtual environment...
-    python -m venv .venv
+    python3 -m venv .venv 2>nul || python -m venv .venv
 )
 
 echo Activating virtual environment...
@@ -40,6 +43,6 @@ echo Starting PostBot...
 echo Press Ctrl+C to stop
 echo.
 
-python postbot.py
+python3 postbot.py 2>nul || python postbot.py
 
 pause

@@ -45,6 +45,11 @@ STREAM_TITLE = os.getenv('STREAM_TITLE', 'Live Stream')
 STREAM_GAME = os.getenv('STREAM_GAME', 'Just Chatting')
 CHECK_INTERVAL = int(os.getenv('CHECK_INTERVAL', '30'))  # seconds
 
+# Hashtag Configuration
+MAX_HASHTAGS = int(os.getenv('MAX_HASHTAGS', '8'))
+CUSTOM_HASHTAGS = os.getenv('CUSTOM_HASHTAGS', 'MysticsDen,IndieDev,Discord,Fun,Community').split(',')
+AUTO_HASHTAGS = os.getenv('AUTO_HASHTAGS', 'true').lower() == 'true'
+
 # Message Templates
 TWITTER_MESSAGE_TEMPLATE = os.getenv('TWITTER_MESSAGE_TEMPLATE', 
     '🔴 LIVE NOW! {title}\n\nPlaying: {game}\n\nCome hang out! 👇\n{stream_url}')
