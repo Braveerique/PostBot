@@ -85,9 +85,11 @@ In your Railway dashboard, go to the **Variables** tab and add these environment
 ## Commands
 
 The bot supports these command-line arguments:
-- `python postbot.py` - Run continuously (default)
-- `python postbot.py test` - Run a single check
-- `python postbot.py status` - Show current configuration
+- `python3 postbot.py` - Run continuously (default)
+- `python3 postbot.py test` - Run a single check
+- `python3 postbot.py status` - Show current configuration
+
+*Note: On Railway, use `python3` instead of `python`*
 
 ## Troubleshooting
 
