@@ -12,40 +12,58 @@
 - ✅ **Real-time Monitoring**: Continuous background monitoring
 - ✅ **Rich Logging**: Detailed logs and colored console output
 
-## Quick Start
+## Deployment Options
 
-### 1. Install Dependencies
+### 🚀 Railway Deployment (Recommended)
 
-```bash
-# Clone or download this repository
-cd PostBot
+**Deploy to the cloud in minutes:**
 
-# Install Python packages (already done if using the provided environment)
-pip install tweepy atproto requests google-api-python-client google-auth-oauthlib google-auth-httplib2 psutil schedule python-dotenv colorama
-```
+1. **Push to GitHub:**
+   ```bash
+   git add .
+   git commit -m "Deploy PostBot"
+   git push origin main
+   ```
 
-### 2. Set Up Configuration
+2. **Deploy to Railway:**
+   - Go to [Railway.app](https://railway.app)
+   - Connect your GitHub account
+   - Click "New Project" → "Deploy from GitHub repo"
+   - Select your PostBot repository
+   - Add your API credentials as environment variables
+   - Deploy automatically!
 
-```bash
-# Copy the example environment file
-copy .env.example .env
+3. **Benefits:**
+   - ✅ 24/7 operation
+   - ✅ Automatic restarts
+   - ✅ No local computer needed
+   - ✅ Professional hosting
+   - ✅ Easy scaling
 
-# Edit .env with your credentials (see setup guides below)
-notepad .env
-```
+📖 **[Complete Railway Deployment Guide →](RAILWAY_DEPLOYMENT.md)**
 
-### 3. Run the Bot
+### 💻 Local Setup
 
-```bash
-# Test configuration
-python postbot.py status
+**Run on your computer:**
 
-# Run a single test
-python postbot.py test
+1. **Install Dependencies:**
+   ```bash
+   cd PostBot
+   pip install -r requirements.txt
+   ```
 
-# Start continuous monitoring
-python postbot.py
-```
+2. **Configure:**
+   ```bash
+   copy .env.example .env
+   # Edit .env with your credentials
+   ```
+
+3. **Run:**
+   ```bash
+   python postbot.py        # Continuous monitoring
+   python postbot.py test   # Single test
+   python postbot.py status # Check config
+   ```
 
 ## Platform Setup Guides
 

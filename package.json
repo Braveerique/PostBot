@@ -1,0 +1,11 @@
+{
+  "name": "postbot",
+  "version": "1.0.0",
+  "description": "Automatic social media stream notifications",
+  "scripts": {
+    "start": "python postbot.py"
+  },
+  "engines": {
+    "python": ">=3.9"
+  }
+}
