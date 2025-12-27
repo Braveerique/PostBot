@@ -41,10 +41,21 @@ class TwitterPoster:
         
         try:
             response = self.client.create_tweet(text=message)
-            logging.info(f"Successfully posted to Twitter: {response.data['id']}")
+            if hasattr(response, 'data') and response.data:
+                logging.info(f"Successfully posted to Twitter: {response.data['id']}")
+            else:
+                logging.info("Successfully posted to Twitter")
             return True
         except Exception as e:
-            logging.error(f"Failed to post to Twitter: {e}")
+            error_msg = str(e)
+            if "oauth1 app permissions" in error_msg.lower():
+                logging.error("Twitter posting failed: App permissions are read-only")
+                logging.error("Solution: Go to Twitter Developer Portal > Your App > Edit Permissions > Change to 'Read and Write' > Regenerate tokens")
+            else:
+                logging.error(f"Failed to post to Twitter: {e}")
+            # Log additional details for debugging
+            if hasattr(e, 'response'):
+                logging.error(f"Twitter API response: {e.response}")
             return False
 
 class BlueskyPoster:
@@ -52,11 +63,18 @@ class BlueskyPoster:
         """Initialize Bluesky client"""
         try:
             self.client = BlueskyClient()
-            self.client.login(handle, password)
-            self.enabled = True
-            logging.info("Bluesky client initialized successfully")
+            # Use the correct login method
+            session = self.client.login(handle, password)
+            # Verify login was successful
+            if session:
+                self.enabled = True
+                logging.info(f"Bluesky client initialized successfully for {handle}")
+            else:
+                self.enabled = False
+                logging.error("Bluesky login failed - no session returned")
         except Exception as e:
             logging.error(f"Failed to initialize Bluesky client: {e}")
+            logging.debug(f"Bluesky error details: {str(e)}")
             self.enabled = False
     
     def post(self, message: str) -> bool:
@@ -65,19 +83,55 @@ class BlueskyPoster:
             return False
         
         try:
-            self.client.send_post(text=message)
-            logging.info("Successfully posted to Bluesky")
+            # Use the correct method for posting to Bluesky with the latest atproto library
+            from atproto import models
+            
+            # Create the post record
+            post = self.client.send_post(text=message)
+            
+            # Extract useful information from the response
+            if hasattr(post, 'uri'):
+                logging.info(f"Successfully posted to Bluesky: {post.uri}")
+            elif hasattr(post, 'cid'):
+                logging.info(f"Successfully posted to Bluesky: {post.cid}")
+            else:
+                logging.info("Successfully posted to Bluesky")
+            
             return True
         except Exception as e:
             logging.error(f"Failed to post to Bluesky: {e}")
-            return False
+            # Log the full exception for debugging
+            logging.debug(f"Bluesky error details: {str(e)}")
+            
+            # Try alternative method if the first fails
+            try:
+                # Fallback to manual post creation
+                from atproto.models.app.bsky.feed.post import Post
+                from datetime import datetime, timezone
+                
+                post_record = Post(
+                    text=message,
+                    createdAt=datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+                )
+                
+                result = self.client.com.atproto.repo.create_record({
+                    'repo': self.client.me.did,
+                    'collection': 'app.bsky.feed.post',
+                    'record': post_record.model_dump()
+                })
+                
+                logging.info(f"Successfully posted to Bluesky (fallback): {result.uri}")
+                return True
+            except Exception as e2:
+                logging.error(f"Bluesky fallback method also failed: {e2}")
+                return False
 
 class FacebookPoster:
     def __init__(self, page_access_token: str, page_id: str):
         """Initialize Facebook client"""
         self.access_token = page_access_token
         self.page_id = page_id
-        self.base_url = f"https://graph.facebook.com/v18.0"
+        self.base_url = f"https://graph.facebook.com/v19.0"
         
         # Verify token
         try:
@@ -115,7 +169,9 @@ class FacebookPoster:
                 logging.info(f"Successfully posted to Facebook: {result.get('id')}")
                 return True
             else:
+                error_response = response.json() if response.content else {}
                 logging.error(f"Failed to post to Facebook: Status {response.status_code}")
+                logging.error(f"Facebook error response: {error_response}")
                 return False
         except Exception as e:
             logging.error(f"Failed to post to Facebook: {e}")
@@ -230,7 +286,7 @@ class InstagramPoster:
         """Initialize Instagram client"""
         self.access_token = access_token
         self.user_id = user_id
-        self.base_url = "https://graph.facebook.com/v18.0"
+        self.base_url = "https://graph.facebook.com/v19.0"
         
         # Verify token
         try:
@@ -255,24 +311,24 @@ class InstagramPoster:
             return False
         
         try:
-            # Note: Instagram Basic Display API has limited posting capabilities
-            # This creates a text-only post using Instagram Graph API
-            # For images/videos, you'd need to upload media first
+            # Note: Instagram Graph API requires media (image/video) for posts
+            # Text-only posts are not supported - this will create a story instead
+            # For proper posts, you need to provide an image URL
             
-            # Create media container
-            media_response = requests.post(
+            # Create a story with text (alternative for text-only content)
+            story_response = requests.post(
                 f"{self.base_url}/{self.user_id}/media",
                 data={
+                    "media_type": "STORIES",
                     "caption": message,
-                    "media_type": "TEXT",  # Text-only post
                     "access_token": self.access_token
                 }
             )
             
-            if media_response.status_code == 200:
-                media_id = media_response.json()["id"]
+            if story_response.status_code == 200:
+                media_id = story_response.json()["id"]
                 
-                # Publish the media
+                # Publish the story
                 publish_response = requests.post(
                     f"{self.base_url}/{self.user_id}/media_publish",
                     data={
@@ -283,13 +339,15 @@ class InstagramPoster:
                 
                 if publish_response.status_code == 200:
                     result = publish_response.json()
-                    logging.info(f"Successfully posted to Instagram: {result.get('id')}")
+                    logging.info(f"Successfully posted to Instagram story: {result.get('id')}")
                     return True
                 else:
-                    logging.error(f"Failed to publish Instagram post: Status {publish_response.status_code}")
+                    logging.error(f"Failed to publish Instagram story: Status {publish_response.status_code}")
+                    logging.error(f"Response: {publish_response.text}")
                     return False
             else:
-                logging.error(f"Failed to create Instagram media: Status {media_response.status_code}")
+                logging.error(f"Failed to create Instagram story: Status {story_response.status_code}")
+                logging.error(f"Response: {story_response.text}")
                 return False
                 
         except Exception as e:

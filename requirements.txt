@@ -1,5 +1,5 @@
 tweepy>=4.14.0
-atproto>=0.0.39
+atproto>=0.0.46
 requests>=2.31.0
 google-api-python-client>=2.100.0
 google-auth-oauthlib>=1.0.0
